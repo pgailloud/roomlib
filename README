@@ -1,0 +1,70 @@
+ROOMLIB
+-------
+
+This javascript library is done mainly to make rooms in webgl using differents library:
+
+Actually it works only with Three.js library.
+
+Done:
+- Creation of room skeleton
+- Usage of texture
+- Adding doors
+
+To Do:
+- objects
+- lights
+
+
+Simple sample:
+
+	<script src="three.js"></script>
+	<script src="drivers/{driver_you _want_to_use.js}"></script>
+	<script src="roomlib.js"></script>
+	<script>
+		
+		//setting constant for 3d screen
+		var VIEW_HEIGHT = window.innerHeight;
+		var VIEW_WIDTH = window.innerWidth;
+		
+		var clock = new THREE.Clock();
+		
+		//initialization...
+		function init() {
+			// ...of the screen
+			//If you have already a container (DOM object) for the 3d, replace the -1 with it.
+			RoomDriver.screen.initialize({width : VIEW_WIDTH, height: VIEW_HEIGHT}, -1);
+		
+			//Creating a room
+			var room1 = new room(0,0,0,10,4,14);
+
+    		room1.walls.floor.Set(RoomDriver.utils.getTextureFromColor(0xFF0000));
+    		room1.walls.ceil.Set(RoomDriver.utils.getTextureFromColor(0xFF0000));
+
+    		room1.walls.front.doors.add(-3, 2.5, 0.75);
+    		room1.walls.front.Set(RoomDriver.utils.getTextureFromColor(0x000011));
+    
+    		room1.walls.back.Set(RoomDriver.utils.getTextureFromColor(0x000044));
+
+    		room1.walls.left.Set(RoomDriver.utils.getTextureFromColor(0x000077));
+    
+    		room1.walls.right.Set(RoomDriver.utils.getTextureFromColor(0x0000AA));
+    
+    		room1.addscene(RoomDriver.screen.scene);
+			
+			//initialization of the controls
+			RoomDriver.control.initialize(RoomDriver.screen.camera);
+		}
+		
+		function render() {
+    		RoomDriver.control.object.update(clock.getDelta());
+    		RoomDriver.screen.render();    
+		}
+
+
+		function animate() {
+    		window.requestAnimationFrame(animate);
+    		render();
+		}
+
+		init();
+		animate();
