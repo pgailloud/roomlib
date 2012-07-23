@@ -68,3 +68,4 @@ Simple sample:
 
 		init();
 		animate();
+	</script>
