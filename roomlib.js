@@ -68,9 +68,229 @@ function room(x, y, z, width, height, deepth){
          - Faire un seul objet duplicable pour chaque mur.
         */
         
+        function set_x (mat){
+
+            var side_multiplier = ((this.side * 2) - 1); // to give -1 or 1 depending the side
+            
+            var side_rotation = {
+                	x : (Math.PI / 2) * side_multiplier,
+                    y : 0,
+                    z : (Math.PI / 2) * side_multiplier
+                };
+            
+            var side_x = thisroom.position.x + ((thisroom.scale.width / 2) * side_multiplier);
+            
+            //Solid Door Creations
+            if (this.doors.array.length > 0) {
+                for (var i=0; i<this.doors.array.length;i++){
+                    
+                    CreateWallMesh(this.doors.meshes, {
+                        width: (this.doors.array[i].length * 2),
+                        height: this.doors.array[i].height,
+                        mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
+                        position : {
+                            x : side_x,
+                            y : thisroom.position.y + (this.doors.array[i].height / 2),
+                            z : thisroom.position.z + this.doors.array[i].x
+                        },
+                        rotation : side_rotation
+                    });
+                }
+            }
+            
+            //If there are doors
+            if (this.doors.array.length > 0){
+                
+                //Check if the first door is directly tied to the left
+                len = (thisroom.scale.deepth / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
+                if (len > 0){
+                    //Yes, then create the left part of the wall
+                    CreateWallMesh(this.meshes, {
+                        width: len,
+                        height: thisroom.scale.height,
+                        mat:  mat,
+                        position : {
+                            x : side_x,
+                            y : thisroom.position.y + (thisroom.scale.height / 2),
+                            z : thisroom.position.z - (thisroom.scale.deepth / 2) + (len / 2)
+                        },
+                        rotation : side_rotation
+                    });
+                }
+                
+                for (var i=0; i<this.doors.array.length;i++){
+                    
+                    //Create wall parts on top of the door                    
+                    CreateWallMesh(this.meshes, {
+                        width: this.doors.array[i].length * 2,
+                        height: thisroom.scale.height - this.doors.array[i].height,
+                        mat:  mat,
+                        position : {
+                            x : side_x,
+                            y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
+                            z : thisroom.position.z + this.doors.array[i].x
+                        },
+                        rotation : side_rotation
+                    });
+                    
+                    var len = 0;
+                    
+                    //If it's not the last door
+                    if (i+1<this.doors.array.length){
+                        len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
+                        
+                        len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
+                    } else {
+                        //if the last door is not tied to the left wall
+                        if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
+                            len = (thisroom.scale.deepth / 2) - (this.doors.array[i].x + this.doors.array[i].length);
+                        }
+                    }
+        
+                    if (len > 0){
+                        //Create the part on right of the door
+                        CreateWallMesh(this.meshes, {
+                            width: len,
+                            height: thisroom.scale.height,
+                            mat:  mat,
+                            position : {
+                                x : side_x,
+                                y : thisroom.position.y + (thisroom.scale.height / 2),
+                                z : thisroom.position.z + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2)
+                            },
+                            rotation : side_rotation
+                        });
+                    }
+                }
+                
+            } else {
+                
+                //Create simply the wall
+                CreateWallMesh(this.meshes, {
+                    width: thisroom.scale.deepth,
+                    height: thisroom.scale.height,
+                    mat:  mat,
+                    position : {
+                        x : side_x,
+                        y : thisroom.position.y + (thisroom.scale.height / 2),
+                        z : thisroom.position.z
+                    },
+                    rotation : side_rotation
+                });
+            }
+        }
+        
+        function set_z(mat){
+            var side_multiplier = ((this.side * 2) - 1); // to give -1 or 1 depending the side
+            var side_rotation = {
+                    x : (Math.PI / 2) * -side_multiplier,
+                    y : Math.PI * this.side,
+                    z : 0
+                };
+            var side_z = thisroom.position.z + ((thisroom.scale.deepth / 2) * side_multiplier);
+            
+            //for Debugging, Creating solid Doors
+            if (this.doors.array.length > 0){
+                for (var i=0; i<this.doors.array.length;i++){
+                    
+                    CreateWallMesh(this.doors.meshes, {
+                        width: (this.doors.array[i].length * 2),
+                        height: this.doors.array[i].height,
+                        mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
+                        position : {
+                            x : thisroom.position.x + this.doors.array[i].x,
+                            y : thisroom.position.y + (this.doors.array[i].height / 2),
+                            z : side_z
+                        },
+                        rotation : side_rotation
+                    });
+                }
+            }
+            
+            
+            //If there are doors
+            if (this.doors.array.length > 0){
+                //Check if the first door is directly tied to the left
+                len = (thisroom.scale.width / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
+                if (len > 0){
+                    //Yes, then create the left part of the wall
+                    CreateWallMesh(this.meshes, {
+                        width: len,
+                        height: thisroom.scale.height,
+                        mat:  mat,
+                        position : {
+                            x : thisroom.position.x - (thisroom.scale.width / 2) + (len / 2),
+                            y : thisroom.position.y + (thisroom.scale.height / 2),
+                            z : side_z
+                        },
+                        rotation : side_rotation
+                    });
+                }
+                
+                for (var i=0; i<this.doors.array.length;i++){
+                    
+                    //Create wall parts on top of the door                    
+                    CreateWallMesh(this.meshes, {
+                        width: this.doors.array[i].length * 2,
+                        height: thisroom.scale.height - this.doors.array[i].height,
+                        mat:  mat,
+                        position : {
+                            x : thisroom.position.x + this.doors.array[i].x,
+                            y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
+                            z : side_z
+                        },
+                        rotation : side_rotation
+                    });
+                    
+                    var len = 0;
+                    
+                    //If it's not the last door
+                    if (i+1<this.doors.array.length){
+                        len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
+                        
+                        len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
+                    } else {
+                        //if the last door is not tied to the left wall
+                        if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
+                            len = (thisroom.scale.width / 2) - (this.doors.array[i].x + this.doors.array[i].length);
+                        }
+                    }
+            
+                    if (len > 0){
+                        //Create the part on right of the door
+                        CreateWallMesh(this.meshes, {
+                            width: len,
+                            height: thisroom.scale.height,
+                            mat:  mat,
+                            position : {
+                                x : thisroom.position.x + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2), 
+                                y : thisroom.position.y + (thisroom.scale.height / 2),
+                                z : side_z 
+                            },
+                            rotation : side_rotation
+                        });
+                    }
+                }
+                
+            } else {
+                //Create simply the wall
+                CreateWallMesh(this.meshes, {
+                    width: thisroom.scale.width, 
+                    height: thisroom.scale.height,
+                    mat:  mat,
+                    position : {
+                        x : thisroom.position.x,
+                        y : thisroom.position.y + (thisroom.scale.height / 2),
+                        z : side_z
+                    },
+                    rotation : side_rotation
+                });
+            }
+        }
+        
         this.walls = {
-        		front : {
-        			name : "front",
+        		back : {
+        			name : "back",
         			warnNone: true,
         			doors : {
         				array : [],
@@ -84,135 +304,11 @@ function room(x, y, z, width, height, deepth){
         				}
         			},
         			meshes: [],
-        			Set : function (mat){
-        				var side = 0;
-	                var side_multiplier = ((side * 2) - 1); // to give -1 or 1 depending the side
-	                
-	                //Solid Door Creations
-	                if (this.doors.array.length > 0) {
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        CreateWallMesh(this.doors.meshes, {
-	                            width: (this.doors.array[i].length * 2),
-	                            height: this.doors.array[i].height,
-	                            mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (this.doors.array[i].height / 2),
-	                                z : thisroom.position.z + this.doors.array[i].x
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                    }
-	                }
-	                
-	                //If there are doors
-	                if (this.doors.array.length > 0){
-	                    
-	                    //Check if the first door is directly tied to the left
-	                    //var seg = 0;
-	                    len = (thisroom.scale.deepth / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
-	                    if (len > 0){
-	                        //Yes, then create the left part of the wall
-	                        CreateWallMesh(this.meshes, {
-	                            width: len,
-	                            height: thisroom.scale.height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                z : thisroom.position.z - (thisroom.scale.deepth / 2) + (len / 2)
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                        seg = 1;
-	                    }
-	                    
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        //Create wall parts on top of the door                    
-	                        CreateWallMesh(this.meshes, {
-	                            width: this.doors.array[i].length * 2,
-	                            height: thisroom.scale.height - this.doors.array[i].height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
-	                                z : thisroom.position.z + this.doors.array[i].x
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                        
-	                        var len = 0;
-	                        //var drawlastpart = true;
-	                        
-	                        //If it's not the last door
-	                        if (i+1<this.doors.array.length){
-	                            len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
-	                            
-	                            len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
-	                        } else {
-	                            //if the last door is not tied to the left wall
-	                            if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
-	                                len = (thisroom.scale.deepth / 2) - (this.doors.array[i].x + this.doors.array[i].length);
-	                            }
-	                        }
-	            
-	                        if (len > 0){
-	                            //Create the part on right of the door
-	                            CreateWallMesh(this.meshes, {
-	                                width: len,
-	                                height: thisroom.scale.height,
-	                                mat:  mat,
-	                                position : {
-	                                    x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                    y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                    z : thisroom.position.z + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2)
-	                                },
-	                                rotation : {
-	                                	x : (Math.PI / 2) * -side_multiplier,
-	                                    y : 0, //(Math.PI / 2) * side_multiplier,
-	                                    z : (Math.PI / 2) * -side_multiplier
-	                                }
-	                            });
-	                        }
-	                    }
-	                    
-	                } else {
-	                    
-	                    //Create simply the wall
-	                    CreateWallMesh(this.meshes, {
-	                        width: thisroom.scale.deepth,
-	                        height: thisroom.scale.height,
-	                        mat:  mat,
-	                        position : {
-	                            x : thisroom.position.x + ((thisroom.scale.width / 2) * (-side_multiplier)),
-	                            y : thisroom.position.y + (thisroom.scale.height / 2),
-	                            z : thisroom.position.z
-	                        },
-	                        rotation : {
-	                        	x : (Math.PI / 2) * -side_multiplier,
-	                            y : 0, //(Math.PI / 2) * side_multiplier,
-	                            z : (Math.PI / 2) * -side_multiplier
-	                        }
-	                    });
-	                }
-	            }
+        			side : 0,
+        			Set : set_x
 	        },
-	        back : {
-	            name : "back",
+	        front : {
+	            name : "front",
 	            warnNone: true,
 	            doors : {
 	                array : [],
@@ -226,132 +322,8 @@ function room(x, y, z, width, height, deepth){
 	                }
 	            },
 	            meshes: [],
-	            Set : function (mat){
-	                var side = 1;
-	                var side_multiplier = ((side * 2) - 1); // to give -1 or 1 depending the side
-	                
-	                //Solid Door Creations
-	                if (this.doors.array.length > 0) {
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        CreateWallMesh(this.doors.meshes, {
-	                            width: (this.doors.array[i].length * 2),
-	                            height: this.doors.array[i].height,
-	                            mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (this.doors.array[i].height / 2),
-	                                z : thisroom.position.z + this.doors.array[i].x
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                    }
-	                }
-	                
-	                //If there are doors
-	                if (this.doors.array.length > 0){
-	                    
-	                    //Check if the first door is directly tied to the left
-	                    //var seg = 0;
-	                    len = (thisroom.scale.deepth / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
-	                    if (len > 0){
-	                        //Yes, then create the left part of the wall
-	                        CreateWallMesh(this.meshes, {
-	                            width: len,
-	                            height: thisroom.scale.height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                z : thisroom.position.z - (thisroom.scale.deepth / 2) + (len / 2)
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                        seg = 1;
-	                    }
-	                    
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        //Create wall parts on top of the door                    
-	                        CreateWallMesh(this.meshes, {
-	                            width: this.doors.array[i].length * 2,
-	                            height: thisroom.scale.height - this.doors.array[i].height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
-	                                z : thisroom.position.z + this.doors.array[i].x
-	                            },
-	                            rotation : {
-	                            	x : (Math.PI / 2) * -side_multiplier,
-	                                y : 0, //(Math.PI / 2) * side_multiplier,
-	                                z : (Math.PI / 2) * -side_multiplier
-	                            }
-	                        });
-	                        
-	                        var len = 0;
-	                        //var drawlastpart = true;
-	                        
-	                        //If it's not the last door
-	                        if (i+1<this.doors.array.length){
-	                            len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
-	                            
-	                            len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
-	                        } else {
-	                            //if the last door is not tied to the left wall
-	                            if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
-	                                len = (thisroom.scale.deepth / 2) - (this.doors.array[i].x + this.doors.array[i].length);
-	                            }
-	                        }
-	            
-	                        if (len > 0){
-	                            //Create the part on right of the door
-	                            CreateWallMesh(this.meshes, {
-	                                width: len,
-	                                height: thisroom.scale.height,
-	                                mat:  mat,
-	                                position : {
-	                                    x : thisroom.position.x + ((thisroom.scale.width / 2) * -side_multiplier),
-	                                    y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                    z : thisroom.position.z + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2)
-	                                },
-	                                rotation : {
-	                                	x : (Math.PI / 2) * -side_multiplier,
-	                                    y : 0, //(Math.PI / 2) * side_multiplier,
-	                                    z : (Math.PI / 2) * -side_multiplier
-	                                }
-	                            });
-	                        }
-	                    }
-	                    
-	                } else {
-	                    
-	                    //Create simply the wall
-	                    CreateWallMesh(this.meshes, {
-	                        width: thisroom.scale.deepth,
-	                        height: thisroom.scale.height,
-	                        mat:  mat,
-	                        position : {
-	                            x : thisroom.position.x + ((thisroom.scale.width / 2) * (-side_multiplier)),
-	                            y : thisroom.position.y + (thisroom.scale.height / 2),
-	                            z : thisroom.position.z
-	                        },
-	                        rotation : {
-	                        	x : (Math.PI / 2) * -side_multiplier,
-	                            y : 0, //(Math.PI / 2) * side_multiplier,
-	                            z : (Math.PI / 2) * -side_multiplier
-	                        }
-	                    });
-	                }
-	            }
+	            side: 1,
+	            Set : set_x
 	        },
 	        left : {
 	            name : "left",
@@ -368,131 +340,8 @@ function room(x, y, z, width, height, deepth){
 	                }
 	            },
 	            meshes: [],
-	            Set : function (mat){
-	                var side = 0;
-	                var side_multiplier = ((side * 2) - 1); // to give -1 or 1 depending the side
-	                
-	                //for Debugging, Creating solid Doors
-	                if (this.doors.array.length > 0){
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        CreateWallMesh(this.doors.meshes, {
-	                            width: (this.doors.array[i].length * 2),
-	                            height: this.doors.array[i].height,
-	                            mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
-	                            position : {
-	                                x : thisroom.position.x + this.doors.array[i].x,
-	                                y : thisroom.position.y + (this.doors.array[i].height / 2),
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                    }
-	                }
-	                
-	                
-	                //If there are doors
-	                if (this.doors.array.length > 0){
-	                    //Check if the first door is directly tied to the left
-	                    //var seg = 0;
-	                    len = (thisroom.scale.width / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
-	                    if (len > 0){
-	                        //Yes, then create the left part of the wall
-	                        CreateWallMesh(this.meshes, {
-	                            width: len,
-	                            height: thisroom.scale.height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x - (thisroom.scale.width / 2) + (len / 2),
-	                                y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                        seg = 1;
-	                    }
-	                    
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        //Create wall parts on top of the door                    
-	                        CreateWallMesh(this.meshes, {
-	                            width: this.doors.array[i].length * 2,
-	                            height: thisroom.scale.height - this.doors.array[i].height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + this.doors.array[i].x,
-	                                y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                        
-	                        var len = 0;
-	                        //var drawlastpart = true;
-	                        
-	                        //If it's not the last door
-	                        if (i+1<this.doors.array.length){
-	                            len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
-	                            
-	                            len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
-	                        } else {
-	                            //if the last door is not tied to the left wall
-	                            if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
-	                                len = (thisroom.scale.width / 2) - (this.doors.array[i].x + this.doors.array[i].length);
-	                            }
-	                        }
-	                
-	                        if (len > 0){
-	                            //Create the part on right of the door
-	                            CreateWallMesh(this.meshes, {
-	                                width: len,
-	                                height: thisroom.scale.height,
-	                                mat:  mat,
-	                                position : {
-	                                    x : thisroom.position.x + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2), 
-	                                    y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                    z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier) 
-	                                },
-	                                rotation : {
-	                                    x : Math.PI / 2 * -side_multiplier,
-	                                    y : Math.PI * side,
-	                                    z : 0
-	                                }
-	                            });
-	                        }
-	                    }
-	                    
-	                } else {
-	                    //Create simply the wall
-	                    CreateWallMesh(this.meshes, {
-	                        width: thisroom.scale.width, 
-	                        height: thisroom.scale.height,
-	                        mat:  mat,
-	                        position : {
-	                            x : thisroom.position.x,
-	                            y : thisroom.position.y + (thisroom.scale.height / 2),
-	                            z : thisroom.position.z + ((thisroom.scale.deepth / 2) * side_multiplier)
-	                        },
-	                        rotation : {
-	                        	x : Math.PI / 2,
-	                            y : Math.PI * side,
-	                            z : 0
-	                        }
-	                    });
-	                }
-	            }
+	            side: 0,
+	            Set : set_z
 	        },
 	        right : {
 	            name : "right",
@@ -509,131 +358,8 @@ function room(x, y, z, width, height, deepth){
 	                }
 	            },
 	            meshes: [],
-	            Set : function (mat){
-	                var side = 1;
-	                var side_multiplier = ((side * 2) - 1); // to give -1 or 1 depending the side
-	                
-	                //for Debugging, Creating solid Doors
-	                if (this.doors.array.length > 0){
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        CreateWallMesh(this.doors.meshes, {
-	                            width: (this.doors.array[i].length * 2),
-	                            height: this.doors.array[i].height,
-	                            mat:  new THREE.MeshBasicMaterial({color: 0xDD0000}),
-	                            position : {
-	                                x : thisroom.position.x + this.doors.array[i].x,
-	                                y : thisroom.position.y + (this.doors.array[i].height / 2),
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                    }
-	                }
-	                
-	                
-	                //If there are doors
-	                if (this.doors.array.length > 0){
-	                    //Check if the first door is directly tied to the left
-	                    //var seg = 0;
-	                    len = (thisroom.scale.width / 2) + (this.doors.array[0].x) - this.doors.array[0].length;
-	                    if (len > 0){
-	                        //Yes, then create the left part of the wall
-	                        CreateWallMesh(this.meshes, {
-	                            width: len,
-	                            height: thisroom.scale.height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x - (thisroom.scale.width / 2) + (len / 2),
-	                                y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                        seg = 1;
-	                    }
-	                    
-	                    for (var i=0; i<this.doors.array.length;i++){
-	                        
-	                        //Create wall parts on top of the door                    
-	                        CreateWallMesh(this.meshes, {
-	                            width: this.doors.array[i].length * 2,
-	                            height: thisroom.scale.height - this.doors.array[i].height,
-	                            mat:  mat,
-	                            position : {
-	                                x : thisroom.position.x + this.doors.array[i].x,
-	                                y : thisroom.position.y + (thisroom.scale.height) - (thisroom.scale.height - this.doors.array[i].height) / 2,
-	                                z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier)
-	                            },
-	                            rotation : {
-	                                x : Math.PI / 2 * -side_multiplier,
-	                                y : Math.PI * side,
-	                                z : 0
-	                            }
-	                        });
-	                        
-	                        var len = 0;
-	                        //var drawlastpart = true;
-	                        
-	                        //If it's not the last door
-	                        if (i+1<this.doors.array.length){
-	                            len = this.doors.array[i+1].x - (this.doors.array[i].x + (this.doors.array[i].length *2));
-	                            
-	                            len = (this.doors.array[i+1].x - this.doors.array[i+1].length) - (this.doors.array[i].x + this.doors.array[i].length);
-	                        } else {
-	                            //if the last door is not tied to the left wall
-	                            if ((this.doors.array[i].x) + (this.doors.array[i].length) < thisroom.scale.width){
-	                                len = (thisroom.scale.width / 2) - (this.doors.array[i].x + this.doors.array[i].length);
-	                            }
-	                        }
-	                
-	                        if (len > 0){
-	                            //Create the part on right of the door
-	                            CreateWallMesh(this.meshes, {
-	                                width: len,
-	                                height: thisroom.scale.height,
-	                                mat:  mat,
-	                                position : {
-	                                    x : thisroom.position.x + this.doors.array[i].x + (this.doors.array[i].length) + (len / 2), 
-	                                    y : thisroom.position.y + (thisroom.scale.height / 2),
-	                                    z : thisroom.position.z + ((thisroom.scale.width) * side_multiplier) 
-	                                },
-	                                rotation : {
-	                                    x : Math.PI / 2 * -side_multiplier,
-	                                    y : Math.PI * side,
-	                                    z : 0
-	                                }
-	                            });
-	                        }
-	                    }
-	                    
-	                } else {
-	                    //Create simply the wall
-	                    CreateWallMesh(this.meshes, {
-	                        width: thisroom.scale.width, 
-	                        height: thisroom.scale.height,
-	                        mat:  mat,
-	                        position : {
-	                            x : thisroom.position.x,
-	                            y : thisroom.position.y + (thisroom.scale.height / 2),
-	                            z : thisroom.position.z + ((thisroom.scale.deepth / 2) * side_multiplier)
-	                        },
-	                        rotation : {
-	                            x : Math.PI / 2 * -side_multiplier,
-	                            y : Math.PI * side,
-	                            z : 0
-	                        }
-	                    });
-	                }
-	            }
+	            side: 1,
+	            Set : set_z
 	        },
 	        floor : {
 	            name : "floor",
@@ -709,7 +435,7 @@ function room(x, y, z, width, height, deepth){
 	                            z : thisroom.position.z
 	                        },
 	                        rotation : {
-	                            x : Math.PI, // 2,
+	                            x : Math.PI,
 	                            y : 0,
 	                            z : 0
 	                        }
